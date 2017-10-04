@@ -9,6 +9,7 @@ package main
 import (
 	"flag"
 	"html/template"
+    "fmt"
 	"log"
 	"net/http"
     "strings"
