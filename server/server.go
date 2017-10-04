@@ -28,6 +28,7 @@ func check(e error) {
 }
 
 func echo(w http.ResponseWriter, r *http.Request) {
+    fmt.Println("in echo function, connect to the front end")
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -64,9 +65,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+    fmt.Println("server start, now open the db")
     //db, _ = gorm.Open("mysql", "root:84921699@(localhost:3306)/mistro1?charset=utf8&parseTime=True&loc=Local")
-    db, _ = gorm.Open("mysql", "healthpet:healthpet@(healthpet.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/healthpet?charset=utf8&parseTime=True&loc=Local")
-
+    //db, _ = gorm.Open("mysql", "healthpet:healthpet@(healthpet.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/healthpet?charset=utf8&parseTime=True&loc=Local")
+    db, _ = gorm.Open("mysql", "root:84921699@(160.39.140.131:3306)/mistro1?charset=utf8&parseTime=True&loc=Local")
+    
     db.AutoMigrate(&User{})
 
 
