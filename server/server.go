@@ -7,6 +7,8 @@
 package main
 
 import (
+    "strconv"
+
 	"flag"
 	"html/template"
     "fmt"
@@ -37,26 +39,109 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	for {
-		mt, message, err := c.ReadMessage()
+		
+
+
+        mt, message, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		log.Printf("recv: %s", message)
+		//log.Printf("recv: %s", message)
 
         msg := string(message[:])
-        if(!strings.Contains(msg, "2017-")){
-            user := User{Name: msg, Age: 22}
-            db.Create(&user)
+        msglist:= strings.Split(msg, " ")
+        
+        /////////////////////////////////////////////////////////////////////////////////
+        if(msglist[0]=="LI"){
+            var account Account
+            found:=false           
+            if errlogin:= db.Where("user_id = ? AND password = ?", msglist[1],msglist[2]).First(&account).Error; errlogin==nil{
+                found=true
+            }            
+            if(found){
+                err = c.WriteMessage(mt, []byte("log in success!"))
 
-            var users []User
-            db.Find(&users) 
+            }else{
+                err = c.WriteMessage(mt, []byte("No record!")) 
+            }            
+        
+        }else if(msglist[0]=="CI"){
+
+            var account Account
+            found:=false           
+            if errci:= db.Where("user_id = ?", msglist[1]).First(&account).Error; errci==nil{
+                found=true
+            }            
+            if(found){
+                account.Height,_=strconv.Atoi(msglist[2])
+                account.Weight,_=strconv.Atoi(msglist[3])
+                account.Gender=msglist[4]
+                account.Age,_=strconv.Atoi(msglist[5])
+                db.Save(&account)
+                err = c.WriteMessage(mt, []byte("change success"))
+            }else{
+                err = c.WriteMessage(mt, []byte("No record!")) 
+            }  
+
+        }else if(msglist[0]=="IC"){
+            var fitness  Fitness
+            var fitnessupdate Fitness
+            found:=false           
+            if erric:= db.Where("user_id = ?", msglist[1]).First(&fitness).Error; erric==nil{
+                found=true
+            }            
+            if(found){
+                fitnessupdate.UserID=msglist[1]
+                fitnessupdate.Date=msglist[3]
+                fitnessupdate.Calorie,_=strconv.Atoi(msglist[2])
+                db.Save(&fitnessupdate)
+                err = c.WriteMessage(mt, []byte("change fitness success"))
+            }else{
+                err = c.WriteMessage(mt, []byte("No record!")) 
+            }  
+
+        }else if(msglist[0]=="RC"){
+            var fitness  []Fitness
+            var fitnesshistory string
+            found:=false           
             
-            for i,_:=range users{
-            list:= forminfo(users[i])
-            err = c.WriteMessage(mt, []byte(list ))        
-            }     
-        }
+            if erric:= db.Where("user_id = ?", msglist[1]).Find(&fitness).Error; erric==nil{
+                found=true
+            }            
+            if(found){
+                for i:=range fitness{
+                    fitnessrecord:=  strconv.Itoa(fitness[i].Calorie)+":"+fitness[i].Date+";"
+                    fitnesshistory=fitnesshistory+" "+fitnessrecord
+                }
+                
+                err = c.WriteMessage(mt, []byte(fitnesshistory))
+            }else{
+                err = c.WriteMessage(mt, []byte("No record!")) 
+            }  
+
+        }else if(msglist[0]=="AF"){
+            var friend  []Friend
+            var friendlist string
+            found:=false           
+            
+            if erric:= db.Where("user_id = ?", msglist[1]).Find(&friend).Error; erric==nil{
+                found=true
+            }            
+            if(found){
+                for i:=range friend{
+                    
+                    friendlist=friendlist+" "+friend[i].FriedID
+                }
+                
+                err = c.WriteMessage(mt, []byte(friendlist))
+            }else{
+                err = c.WriteMessage(mt, []byte("No record!")) 
+            }    
+        }else{
+
+        }            
+        /////////////////////////////////////////////////////////////////////////////
 
     }
 }
@@ -68,13 +153,17 @@ func home(w http.ResponseWriter, r *http.Request) {
 func main() {
     fmt.Println("server start, now open the db")
     //db, _ = gorm.Open("mysql", "root:84921699@(localhost:3306)/mistro1?charset=utf8&parseTime=True&loc=Local")
-    //db, _ = gorm.Open("mysql", "healthpet:healthpet@(healthpet.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/healthpet?charset=utf8&parseTime=True&loc=Local")
-    db, _ = gorm.Open("mysql", "root:84921699@(160.39.140.131:3306)/mistro1?charset=utf8&parseTime=True&loc=Local")
     
-    db.AutoMigrate(&User{})
-
-
-	flag.Parse()
+    db,_= gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
+    // sophia1 := Account{UserID: "yz3083", Password:"yingshuangzheng",Height: 29,Weight :30,Gender:"Female",Age: 18}
+    // db.NewRecord(sophia1)
+    // db.Create(&sophia1)
+    // db.NewRecord(sophia1)
+    //db, _ = gorm.Open("mysql", "root:84921699@(160.39.140.131:3306)/mistro1?charset=utf8&parseTime=True&loc=Local")
+    
+    db.AutoMigrate(&Fitness{})
+	
+    flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)
@@ -159,13 +248,30 @@ You can change the message and send multiple times.
 </body>
 </html>
 `))
-func forminfo(input User) string {
-    reply:= input.Name +"\n"
-    return reply
+// func forminfo(input User) string {
+//     reply:= input.Name +"\n"
+//     return reply
+// }
+
+type Account struct {
+    gorm.Model 
+    UserID string `gorm:"UserID"`
+    Password string `gorm:"Password"`
+    //Name string
+    Height int `gorm:"Height"`
+    Weight int `gorm:"Weight"`
+    Gender string `gorm:"Gender"`
+    Age  int `gorm:"Age"`    
+}
+type Friend struct {
+    gorm.Model 
+    UserID string 
+    FriedID string     
+}
+type Fitness struct {
+    gorm.Model 
+    Date string
+    UserID string 
+    Calorie int   
 }
 
-type User struct {
-    gorm.Model
-    Name string
-    Age  int    
-}
