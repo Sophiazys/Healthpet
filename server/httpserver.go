@@ -46,7 +46,7 @@ func server(w http.ResponseWriter, req *http.Request) {
     }            
     
     fmt.Println("before marshal to json")
-    output,_ := json.Marshal(reply.friends)
+    output,_ := json.Marshal(reply)
     w.Write(output)
 }
 
