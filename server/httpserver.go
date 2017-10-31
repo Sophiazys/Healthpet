@@ -4,7 +4,7 @@ import (
     "fmt"
     "net/http"
     //"strings"
-    "strconv"
+    //"strconv"
     "log"
     "encoding/json"
     "io/ioutil"
@@ -23,14 +23,17 @@ func server(w http.ResponseWriter, req *http.Request) {
     fmt.Println(t.Act)
     fmt.Println(t.Password)
     var reply Reply
+    var reply_friend Reply_friend
+    var reply_fitness Reply_fitness
 
     if(t.Act=="LI"){            
             var account Account 
             if errci:=db.Where("user_id = ? AND password = ?", t.UserID,t.Password).First(&account).Error;errci==nil{
                 reply= CheckDb(t.UserID)
+                reply_friend=CheckFriend(t.UserID)
+                reply_fitness=CheckFitness(t.UserID)
             }           
             fmt.Println("after query")
-
     }else if(t.Act=="CI"){
             var account Account        
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci==nil{
@@ -39,54 +42,70 @@ func server(w http.ResponseWriter, req *http.Request) {
                 fmt.Println("found" + t.UserID)
                 fmt.Println("found acc"+account.UserID)
                 reply = CheckDb(t.UserID) 
+                reply_friend=CheckFriend(t.UserID)
+                reply_fitness=CheckFitness(t.UserID)
             }            
     }else{
-                reply=CheckDb(t.UserID)
-            
+            reply=CheckDb(t.UserID)   
+            reply_friend=CheckFriend(t.UserID)   
+            reply_fitness=CheckFitness(t.UserID)     
     }            
     
     fmt.Println("before marshal to json")
     output,_ := json.Marshal(reply)
     w.Write(output)
+
+    output2,_ := json.Marshal(reply_friend.friends)
+    w.Write(output2)
+    output3,_ := json.Marshal(reply_fitness.fitness)
+    w.Write(output3)
+
+}
+func  CheckFriend( UserID string) Reply_friend{
+    var reply_friend Reply_friend
+    var friend  []Friend
+    var friendslist string
+    if err:= db.Where("user_id = ?", UserID).Find(&friend).Error; err!=nil{
+         fmt.Println("friend check err")
+      }
+      for i:=range friend {
+        fmt.Println("pengyou"+friend[i].UserID+" "+friend[i].FriedID)
+        friendslist=friendslist + friend[i].FriedID+","
+      }
+      reply_friend.friends=friendslist
+
+      return reply_friend
 }
 
+func  CheckFitness( UserID string) Reply_fitness{
+    var reply_fitness Reply_fitness
+    var fitness  []Fitness
+    var fitnesslist string
+    if err:= db.Where("user_id = ?", UserID).Find(&fitness).Error; err!=nil{
+         fmt.Println("fitness check err")
+      }
+      for i:=range fitness {
+        fitnesslist=fitnesslist + fitness[i].Date+" "+fitness[i].Calorie+","
+      }
+      reply_fitness.fitness=fitnesslist
+
+      return reply_fitness
+}
 func  CheckDb( UserID string) Reply{
-  var reply Reply
-  var friend  []Friend
-  var accountinfo Account
-  var friendslist string
-  var fitnesslist string
-  if err:=db.Where("user_id = ?", UserID).First(&accountinfo).Error; err!=nil{
-    fmt.Println("no user match!")
-  }
-
-  reply.UserID = accountinfo.UserID
-  reply.Password = accountinfo.Password
-  reply.Height = accountinfo.Height
-  reply.Weight = accountinfo.Weight
-  reply.Gender = accountinfo.Gender
-  reply.Age = accountinfo.Age
-  
-  if err:= db.Where("user_id = ?", UserID).Find(&friend).Error; err!=nil{
-     fmt.Println("friend check err")
-  }
-  for i:=range friend {
-    friendslist=friendslist + friend[i].FriedID+","
-  }
-
-  var fitness  []Fitness                         
-  if err := db.Where("user_id = ?", UserID).Find(&fitness).Error; err!=nil{
-      fmt.Println("friend check err")
-  } 
-  for i:=range fitness{
-     fitnesslist = fitnesslist+ " "+ fitness[i].Date+":"+strconv.Itoa(fitness[i].Calorie)
-  }
-  reply.friends=friendslist
-  reply.fitness=fitnesslist
-  
-  return reply
+      var reply Reply
+      var accountinfo Account
+      if err:=db.Where("user_id = ?", UserID).First(&accountinfo).Error; err!=nil{
+        fmt.Println("no user match!")
+      }
+    reply.UserID = accountinfo.UserID
+      reply.Password = accountinfo.Password
+      reply.Height = accountinfo.Height
+      reply.Weight = accountinfo.Weight
+      reply.Gender = accountinfo.Gender
+      reply.Age = accountinfo.Age
+      
+      return reply
 }
-
 func main() {
     var err error
     
@@ -106,8 +125,7 @@ type React_request struct {
     Act      string 
     UserID   string  
     Password string 
-    account   Account
-    
+    account   Account   
 }
 
 type Reply struct{  
@@ -117,9 +135,14 @@ type Reply struct{
    Weight int 
    Gender string 
    Age  int 
-   friends  string 
-   fitness  string
+}
 
+type Reply_friend struct{  
+   friends  string 
+}
+
+type Reply_fitness struct{  
+   fitness  string 
 }
 
 type Account struct {
@@ -140,5 +163,5 @@ type Fitness struct {
     gorm.Model 
     Date string
     UserID string 
-    Calorie int   
+    Calorie string
 }
