@@ -23,15 +23,13 @@ func server(w http.ResponseWriter, req *http.Request) {
     fmt.Println(t.Act)
     fmt.Println(t.Password)
     var reply Reply
-    var reply_friend Reply_friend
-    var reply_fitness Reply_fitness
 
     if(t.Act=="LI"){            
             var account Account 
             if errci:=db.Where("user_id = ? AND password = ?", t.UserID,t.Password).First(&account).Error;errci==nil{
-                reply= CheckDb(t.UserID)
-                reply_friend=CheckFriend(t.UserID)
-                reply_fitness=CheckFitness(t.UserID)
+                CheckDb(t.UserID,&reply)
+                CheckFriend(t.UserID,&reply)
+                CheckFitness(t.UserID,&reply)
             }           
             fmt.Println("after query")
     }else if(t.Act=="CI"){
@@ -41,44 +39,34 @@ func server(w http.ResponseWriter, req *http.Request) {
                 db.Save(&account)
                 fmt.Println("found" + t.UserID)
                 fmt.Println("found acc"+account.UserID)
-                reply = CheckDb(t.UserID) 
-                reply_friend=CheckFriend(t.UserID)
-                reply_fitness=CheckFitness(t.UserID)
+                CheckDb(t.UserID,&reply) 
+                CheckFriend(t.UserID,&reply)
+                CheckFitness(t.UserID,&reply)
             }            
     }else{
-            reply=CheckDb(t.UserID)   
-            reply_friend=CheckFriend(t.UserID)   
-            reply_fitness=CheckFitness(t.UserID)     
+            CheckDb(t.UserID,&reply)   
+            CheckFriend(t.UserID,&reply)   
+            CheckFitness(t.UserID,&reply)     
     }            
-    
-    fmt.Println("before marshal to json")
-    output,_ := json.Marshal(reply)
+
+    res1D := &reply
+    output,_ := json.Marshal(res1D)
     w.Write(output)
 
-    output2,_ := json.Marshal(reply_friend.friends)
-    w.Write(output2)
-    output3,_ := json.Marshal(reply_fitness.fitness)
-    w.Write(output3)
-
 }
-func  CheckFriend( UserID string) Reply_friend{
-    var reply_friend Reply_friend
+func  CheckFriend( UserID string, reply *Reply) {
     var friend  []Friend
-    var friendslist string
     if err:= db.Where("user_id = ?", UserID).Find(&friend).Error; err!=nil{
          fmt.Println("friend check err")
-      }
+    }
       for i:=range friend {
         fmt.Println("pengyou"+friend[i].UserID+" "+friend[i].FriedID)
-        friendslist=friendslist + friend[i].FriedID+","
+        reply.Friendlist= reply.Friendlist + friend[i].FriedID+","
       }
-      reply_friend.friends=friendslist
-
-      return reply_friend
+      
 }
 
-func  CheckFitness( UserID string) Reply_fitness{
-    var reply_fitness Reply_fitness
+func  CheckFitness( UserID string, reply *Reply) {
     var fitness  []Fitness
     var fitnesslist string
     if err:= db.Where("user_id = ?", UserID).Find(&fitness).Error; err!=nil{
@@ -86,25 +74,22 @@ func  CheckFitness( UserID string) Reply_fitness{
       }
       for i:=range fitness {
         fitnesslist=fitnesslist + fitness[i].Date+" "+fitness[i].Calorie+","
-      }
-      reply_fitness.fitness=fitnesslist
-
-      return reply_fitness
+      }      
+      reply.Fitnesslist= fitnesslist
 }
-func  CheckDb( UserID string) Reply{
-      var reply Reply
+func  CheckDb( UserID string,reply *Reply) {
+      // var reply Reply
       var accountinfo Account
       if err:=db.Where("user_id = ?", UserID).First(&accountinfo).Error; err!=nil{
         fmt.Println("no user match!")
       }
-    reply.UserID = accountinfo.UserID
+      reply.UserID = accountinfo.UserID
       reply.Password = accountinfo.Password
       reply.Height = accountinfo.Height
       reply.Weight = accountinfo.Weight
       reply.Gender = accountinfo.Gender
       reply.Age = accountinfo.Age
-      
-      return reply
+
 }
 func main() {
     var err error
@@ -115,7 +100,7 @@ func main() {
     db.AutoMigrate(&Fitness{})
     
     http.HandleFunc("/", server) // set router
-    err = http.ListenAndServe(":9090", nil) // set listen port
+    err = http.ListenAndServe(":9191", nil) // set listen port
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
     }
@@ -129,12 +114,15 @@ type React_request struct {
 }
 
 type Reply struct{  
-   UserID string 
-   Password string
-   Height int 
-   Weight int 
-   Gender string 
-   Age  int 
+   UserID string `json:"UserID"`
+   Password string  `json:"Password"`
+   Height int `json:"Height"`
+   Weight int `json:"Weight"`
+   Gender string `json:"Gender"`
+   Age  int `json:"Age"`
+   Fitnesslist string `json:"Fitnesslist"`
+   Friendlist string `json:"Friendlist"`   
+   
 }
 
 type Reply_friend struct{  
