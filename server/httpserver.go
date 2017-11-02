@@ -60,20 +60,19 @@ func  CheckFriend( UserID string, reply *Reply) {
          fmt.Println("friend check err")
     }
       for i:=range friend {
-        fmt.Println("pengyou"+friend[i].UserID+" "+friend[i].FriedID)
-        reply.Friendlist= reply.Friendlist + friend[i].FriedID+","
+        reply.Friendlist=append(reply.Friendlist,friend[i].FriedID) 
       }
       
 }
 
 func  CheckFitness( UserID string, reply *Reply) {
     var fitness  []Fitness
-    var fitnesslist string
+    var fitnesslist []string
     if err:= db.Where("user_id = ?", UserID).Find(&fitness).Error; err!=nil{
          fmt.Println("fitness check err")
       }
       for i:=range fitness {
-        fitnesslist=fitnesslist + fitness[i].Date+" "+fitness[i].Calorie+","
+        fitnesslist = append(fitnesslist,fitness[i].Date+" "+fitness[i].Calorie)
       }      
       reply.Fitnesslist= fitnesslist
 }
@@ -120,8 +119,8 @@ type Reply struct{
    Weight int `json:"Weight"`
    Gender string `json:"Gender"`
    Age  int `json:"Age"`
-   Fitnesslist string `json:"Fitnesslist"`
-   Friendlist string `json:"Friendlist"`   
+   Fitnesslist []string `json:"Fitnesslist"`
+   Friendlist []string `json:"Friendlist"`   
    
 }
 
