@@ -65,7 +65,7 @@ func server(w http.ResponseWriter, req *http.Request) {
             }else{
               if errd:= db.Where("user_id = ? AND date = ?",t.UserID,t.Fitness.Date).First(&new_fitness).Error; errd ==nil{
                 fmt.Println(new_fitness)
-                db.Model(&new_fitness).Update("calorie", t.Fitness.Calorie)
+                db.Model(&new_fitness).Update("date", t.Fitness.Calorie)
                 //db.Save(&new_fitness)
               }else{
                 fmt.Println(t.Fitness.Date)
