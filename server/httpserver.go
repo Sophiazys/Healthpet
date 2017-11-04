@@ -38,7 +38,8 @@ func server(w http.ResponseWriter, req *http.Request) {
                 CheckFitness(t.UserID,&reply)
             } else{
               reply.Error= "wrong Password or UserID"
-            }          
+            } 
+
     }else if(t.Act=="CI"){
             var account Account        
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci==nil{
@@ -55,7 +56,22 @@ func server(w http.ResponseWriter, req *http.Request) {
                 CheckFitness(t.UserID,&reply)
             }else{
               reply.Error= "User doesn't exist"
-            }           
+            } 
+
+    }else if(t.Act=="AF"){
+            var new_fitness Fitness
+            if errci:= db.Where("user_id = ?", t.UserID).First(&new_fitness).Error; errci==nil{
+              db.NewRecord(&t.Fitness)
+              db.Create(&t.Fitness)
+              //db.NewRecord(t.Fitness)
+
+              CheckDb(t.UserID,&reply) 
+              CheckFriend(t.UserID,&reply)
+              CheckFitness(t.UserID,&reply)
+            }else{
+              reply.Error= "User doesn't exist"
+            } 
+
     }else{
             reply.Error="Bad Request"
             // CheckDb(t.UserID,&reply)   
@@ -121,7 +137,9 @@ type React_request struct {
     Act      string 
     UserID   string  
     Password string 
-    Account   Account   
+    Account  Account 
+    Fitness  Fitness
+    //Friendlist Friend[]  
 }
 
 type Reply struct{  
