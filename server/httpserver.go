@@ -14,6 +14,12 @@ import (
 )
 var db *gorm.DB
 
+func check(e error) {
+  if e != nil {
+    panic(e)
+  }
+}
+
 func server(w http.ResponseWriter, req *http.Request) {
     fmt.Println(req.Method)
     
@@ -21,7 +27,7 @@ func server(w http.ResponseWriter, req *http.Request) {
     var t React_request
     json.Unmarshal(body, &t)
     fmt.Println(t.Act)
-    fmt.Println(t.Password)
+    fmt.Println(t)
     var reply Reply
 
     if(t.Act=="LI"){            
@@ -31,14 +37,19 @@ func server(w http.ResponseWriter, req *http.Request) {
                 CheckFriend(t.UserID,&reply)
                 CheckFitness(t.UserID,&reply)
             }           
-            fmt.Println("after query")
     }else if(t.Act=="CI"){
             var account Account        
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci==nil{
-                account = t.account
-                db.Save(&account)
-                fmt.Println("found" + t.UserID)
-                fmt.Println("found acc"+account.UserID)
+                fmt.Println(t.Account.Weight) 
+                account.Password = t.Account.Password
+                account.Height = t.Account.Height
+                account.Weight = t.Account.Weight
+                account.Gender = t.Account.Gender
+                account.Age    = t.Account.Age    
+                db.Save(&account)             
+                
+                // fmt.Println("found" + t.UserID)
+                // fmt.Println("found acc"+account.UserID)
                 CheckDb(t.UserID,&reply) 
                 CheckFriend(t.UserID,&reply)
                 CheckFitness(t.UserID,&reply)
@@ -61,8 +72,7 @@ func  CheckFriend( UserID string, reply *Reply) {
     }
       for i:=range friend {
         reply.Friendlist=append(reply.Friendlist,friend[i].FriedID) 
-      }
-      
+      }      
 }
 
 func  CheckFitness( UserID string, reply *Reply) {
@@ -77,7 +87,6 @@ func  CheckFitness( UserID string, reply *Reply) {
       reply.Fitnesslist= fitnesslist
 }
 func  CheckDb( UserID string,reply *Reply) {
-      // var reply Reply
       var accountinfo Account
       if err:=db.Where("user_id = ?", UserID).First(&accountinfo).Error; err!=nil{
         fmt.Println("no user match!")
@@ -109,7 +118,7 @@ type React_request struct {
     Act      string 
     UserID   string  
     Password string 
-    account   Account   
+    Account   Account   
 }
 
 type Reply struct{  
@@ -123,15 +132,6 @@ type Reply struct{
    Friendlist []string `json:"Friendlist"`   
    
 }
-
-type Reply_friend struct{  
-   friends  string 
-}
-
-type Reply_fitness struct{  
-   fitness  string 
-}
-
 type Account struct {
     gorm.Model 
     UserID string 
