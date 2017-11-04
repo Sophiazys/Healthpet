@@ -36,28 +36,31 @@ func server(w http.ResponseWriter, req *http.Request) {
                 CheckDb(t.UserID,&reply)
                 CheckFriend(t.UserID,&reply)
                 CheckFitness(t.UserID,&reply)
-            }           
+            } else{
+              reply.Error= "wrong Password or UserID"
+            }          
     }else if(t.Act=="CI"){
             var account Account        
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci==nil{
-                fmt.Println(t.Account.Weight) 
-                account.Password = t.Account.Password
-                account.Height = t.Account.Height
-                account.Weight = t.Account.Weight
-                account.Gender = t.Account.Gender
-                account.Age    = t.Account.Age    
-                db.Save(&account)             
-                
-                // fmt.Println("found" + t.UserID)
-                // fmt.Println("found acc"+account.UserID)
+                if(account.UserID==t.Account.UserID){
+                  account.Password = t.Account.Password
+                  account.Height = t.Account.Height
+                  account.Weight = t.Account.Weight
+                  account.Gender = t.Account.Gender
+                  account.Age    = t.Account.Age    
+                  db.Save(&account) 
+                }                            
                 CheckDb(t.UserID,&reply) 
                 CheckFriend(t.UserID,&reply)
                 CheckFitness(t.UserID,&reply)
-            }            
+            }else{
+              reply.Error= "User doesn't exist"
+            }           
     }else{
-            CheckDb(t.UserID,&reply)   
-            CheckFriend(t.UserID,&reply)   
-            CheckFitness(t.UserID,&reply)     
+            reply.Error="Bad Request"
+            // CheckDb(t.UserID,&reply)   
+            // CheckFriend(t.UserID,&reply)   
+            // CheckFitness(t.UserID,&reply)     
     }            
 
     res1D := &reply
@@ -129,7 +132,8 @@ type Reply struct{
    Gender string `json:"Gender"`
    Age  int `json:"Age"`
    Fitnesslist []string `json:"Fitnesslist"`
-   Friendlist []string `json:"Friendlist"`   
+   Friendlist []string `json:"Friendlist"`
+   Error string   
    
 }
 type Account struct {
