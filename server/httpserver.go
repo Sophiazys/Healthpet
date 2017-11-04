@@ -60,18 +60,22 @@ func server(w http.ResponseWriter, req *http.Request) {
 
     }else if(t.Act=="AF"){
             var new_fitness Fitness
-            if errci:= db.Where("user_id = ?", t.UserID).First(&new_fitness).Error; errci==nil{
-              db.NewRecord(&t.Fitness)
-              db.Create(&t.Fitness)
-              //db.NewRecord(t.Fitness)
-
+            if errci:= db.Where("user_id = ?", t.UserID).Error; errci!=nil{
+               reply.Error= "User doesn't exist"
+            }else{
+              if errd:= db.Where("user_id = ? AND date = ?",t.UserID,t.Fitness.Date).First(&new_fitness).Error; errd ==nil{
+                new_fitness.Calorie=t.Fitness.Calorie
+                db.Save(&new_fitness)
+              }else{
+                fmt.Println(t.Fitness.Date)
+                db.NewRecord(&t.Fitness)
+                db.Create(&t.Fitness)
+              }
               CheckDb(t.UserID,&reply) 
               CheckFriend(t.UserID,&reply)
               CheckFitness(t.UserID,&reply)
-            }else{
-              reply.Error= "User doesn't exist"
-            } 
-
+            }
+            
     }else{
             reply.Error="Bad Request"
             // CheckDb(t.UserID,&reply)   
