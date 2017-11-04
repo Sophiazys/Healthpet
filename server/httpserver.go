@@ -64,8 +64,9 @@ func server(w http.ResponseWriter, req *http.Request) {
                reply.Error= "User doesn't exist"
             }else{
               if errd:= db.Where("user_id = ? AND date = ?",t.UserID,t.Fitness.Date).First(&new_fitness).Error; errd ==nil{
-                new_fitness.Calorie=t.Fitness.Calorie
-                db.Save(&new_fitness)
+                fmt.Println(new_fitness)
+                db.Model(&new_fitness).Update("calorie", t.Fitness.Calorie)
+                //db.Save(&new_fitness)
               }else{
                 fmt.Println(t.Fitness.Date)
                 db.NewRecord(&t.Fitness)
@@ -128,7 +129,7 @@ func main() {
     db,err = gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
     
     fmt.Println(err)
-    db.AutoMigrate(&Fitness{})
+    db.AutoMigrate(&Fitness{},&Account{},&Friend{})
     
     http.HandleFunc("/", server) // set router
     err = http.ListenAndServe(":9191", nil) // set listen port
@@ -159,8 +160,8 @@ type Reply struct{
    
 }
 type Account struct {
-    gorm.Model 
-    UserID string 
+    
+    UserID string  `gorm:"primary_key"`
     Password string
     Height int 
     Weight int 
@@ -168,13 +169,13 @@ type Account struct {
     Age  int 
 }
 type Friend struct {
-    gorm.Model 
-    UserID string 
+    
+    UserID string  `gorm:"primary_key"`
     FriedID string     
 }
 type Fitness struct {
-    gorm.Model 
+   
     Date string
-    UserID string 
-    Calorie string
+    UserID string  `gorm:"primary_key"`
+    Calorie string `gorm:"primary_key"`
 }
