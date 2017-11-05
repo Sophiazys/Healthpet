@@ -37,7 +37,7 @@ func server(w http.ResponseWriter, req *http.Request) {
                 CheckFriend(t.UserID,&reply)
                 CheckFitness(t.UserID,&reply)
             } else{
-              reply.Error= "wrong Password or UserID;"
+              reply.Error= "wrong Password or UserID"
             } 
 
     }else if(t.Act=="CI"){  //update account info
@@ -55,7 +55,7 @@ func server(w http.ResponseWriter, req *http.Request) {
                 CheckFriend(t.UserID,&reply)
                 CheckFitness(t.UserID,&reply)
             }else{
-              reply.Error= "User doesn't exist;"
+              reply.Error= "User doesn't exist"
             } 
 
     }else if(t.Act=="AF"){  // update fitness info
@@ -81,13 +81,13 @@ func server(w http.ResponseWriter, req *http.Request) {
     }else if(t.Act=="FO"){
             var account Account 
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci!=nil{
-               reply.Error= "User doesn't exist;"
+               reply.Error= "User doesn't exist"
             }else{
               for i:=range t.Friendlist {
                 var tmpfriend Friend
                 var faccount Account
                 if errf:= db.Where("user_id = ?",t.Friendlist[i]).First(&faccount).Error; errf!=nil{
-                  reply.Error = reply.Error+" friend "+ t.Friendlist[i]+ " does not exist;"
+                  reply.Error = reply.Error+" friend "+ t.Friendlist[i]+ " does not exist"
                 }else{
                   tmpfriend.UserID=t.UserID
                   tmpfriend.FriedID=t.Friendlist[i]
@@ -100,7 +100,7 @@ func server(w http.ResponseWriter, req *http.Request) {
               CheckFitness(t.UserID,&reply)
             }
     }else{
-            reply.Error="Bad Request;"
+            reply.Error="Bad Request"
             // CheckDb(t.UserID,&reply)   
             // CheckFriend(t.UserID,&reply)   
             // CheckFitness(t.UserID,&reply)     
