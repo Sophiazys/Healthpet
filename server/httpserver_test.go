@@ -7,6 +7,8 @@ import (
     "testing"
     "fmt"
     "bytes"
+    "github.com/jinzhu/gorm"
+    _"github.com/jinzhu/gorm/dialects/mysql"
 )
 
 func TestServer(t *testing.T) {
@@ -63,9 +65,25 @@ func TestServer(t *testing.T) {
     testfunc( requestFOerr, "FOerr", expected,t)
 
 
-    // requestSI := request("SI","testsignin","123123",account,fitness,friendlist)
-    // expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":""}`
-    // testfunc( requestSI, "SI", expected,t)
+    requestSI := request("SI","testsignin","123123",account,fitness,friendlist)
+    req, err := http.NewRequest("POST", "/", tojson(requestSI))
+    if err != nil {
+        t.Fatal(err)
+    }
+    rr := httptest.NewRecorder()
+    handler := http.HandlerFunc(Server)
+    handler.ServeHTTP(rr, req)      
+    db,_:= gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
+    var accountSI Account 
+    if errSI:= db.Where("user_id = ?", "testsignin").Find(&accountSI).Error; errSI!=nil{
+         fmt.Println("SI fail")
+    }else{
+        db.Delete(&accountSI)
+        fmt.Println("SI OK")
+    }
+ 
+   
+    
 
     /////////////// record sierrtest
     requestSIerr := request("SI","SIerrtest","123123",account,fitness,friendlist)
