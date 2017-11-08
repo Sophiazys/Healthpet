@@ -59,9 +59,18 @@ func TestServer(t *testing.T) {
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"User doesn't exist"}`
     testfunc( requestFOerr, "FOerr", expected,t)
 
+
+    // requestSI := request("SI","testsignin","123123",account,fitness,friendlist)
+    // expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":""}`
+    // testfunc( requestSI, "SI", expected,t)
+
     requestSIerr := request("SI","111111","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"User already exist"}`
     testfunc( requestSIerr, "SIerr", expected,t)
+
+    requestActerr := request("sophia","111111","123123",account,fitness,friendlist)
+    expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"Bad Request"}`
+    testfunc( requestActerr, "Acterr", expected,t)
 
 
 
