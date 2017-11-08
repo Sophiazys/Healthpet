@@ -19,37 +19,40 @@ func TestServer(t *testing.T) {
     account.Weight= 12
 
     var fitness Fitness
-    fitness.UserID="123123"
+    fitness.UserID="AFtest"
     fitness.Date="2018-11-08"
     fitness.Calorie="0"
     
     friendlist:= []string{"111111","123456"}
-    
-    requestLI := request("LI","123123","123123",account,fitness,friendlist)
-    expected := `{"UserID":"123123","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":["2018-11-08 0"],"Friendlist":["111111"],"Error":""}`
+    ///////record LItest
+    requestLI := request("LI","LItest","123123",account,fitness,friendlist)
+    expected := `{"UserID":"LItest","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":null,"Friendlist":null,"Error":""}`
     testfunc( requestLI, "LI", expected,t)
 
     requestLIerr := request("LI","456456","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"wrong Password or UserID"}`
     testfunc( requestLIerr, "LIerr", expected,t)
 
-    account.UserID="987665"
-    requestCI := request("CI","987665","123123",account,fitness,friendlist)
-    expected = `{"UserID":"987665","Password":"123123","Height":12,"Weight":12,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":""}`
+    ///////////record CItest
+    account.UserID="CItest"
+    requestCI := request("CI","CItest","123123",account,fitness,friendlist)
+    expected = `{"UserID":"CItest","Password":"123123","Height":12,"Weight":12,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":""}`
     testfunc( requestCI, "CI", expected,t)
 
     requestCIerr := request("CI","999999","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"User doesn't exist"}`
     testfunc( requestCIerr, "CIerr", expected,t)
 
-    requestAF := request("AF","123123","123123",account,fitness,friendlist)
-    expected = `{"UserID":"123123","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":["2018-11-08 0"],"Friendlist":["111111"],"Error":""}`
+    ///////////record AFtest
+    requestAF := request("AF","AFtest","123123",account,fitness,friendlist)
+    expected = `{"UserID":"AFtest","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":["2018-11-08 0"],"Friendlist":null,"Error":""}`
     testfunc( requestAF, "AF", expected,t)
 
     requestAFerr := request("AF","999999","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"User doesn't exist"}`
     testfunc( requestAFerr, "AFerr", expected,t)
 
+    /////////////record AFtest
     requestFO := request("FO","123123","123123",account,fitness,friendlist)
     expected = `{"UserID":"123123","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":["2018-11-08 0"],"Friendlist":["111111"],"Error":" friend 123456 does not exist"}`
     testfunc( requestFO, "FO", expected,t)
@@ -64,11 +67,12 @@ func TestServer(t *testing.T) {
     // expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":""}`
     // testfunc( requestSI, "SI", expected,t)
 
-    requestSIerr := request("SI","111111","123123",account,fitness,friendlist)
+    /////////////// record sierrtest
+    requestSIerr := request("SI","SIerrtest","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"User already exist"}`
     testfunc( requestSIerr, "SIerr", expected,t)
 
-    requestActerr := request("sophia","111111","123123",account,fitness,friendlist)
+    requestActerr := request("sophia","SIerrtest","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"Bad Request"}`
     testfunc( requestActerr, "Acterr", expected,t)
 
@@ -90,6 +94,7 @@ func request(Act string, UserID string, Password string, account Account,fitness
     r.UserID = UserID
     r.Password= Password
     r.Account = account
+    r.Account.UserID= UserID
     r.Fitness = fitness
     r.Friendlist=friendlist
     return r 
