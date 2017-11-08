@@ -20,7 +20,7 @@ func check(e error) {
   }
 }
 
-func server(w http.ResponseWriter, req *http.Request) {
+func Server(w http.ResponseWriter, req *http.Request) {
     fmt.Println(req.Method)
     
     body, _ := ioutil.ReadAll(req.Body)
@@ -163,7 +163,7 @@ func main() {
     fmt.Println(err)
     db.AutoMigrate(&Fitness{},&Account{},&Friend{})
     
-    http.HandleFunc("/", server) // set router
+    http.HandleFunc("/", Server) // set router
     err = http.ListenAndServe(":9191", nil) // set listen port
     if err != nil {
         log.Fatal("ListenAndServe: ", err)

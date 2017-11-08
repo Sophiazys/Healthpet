@@ -9,7 +9,7 @@ import (
     "bytes"
 )
 
-func TestHealthCheckHandler(t *testing.T) {
+func TestServer(t *testing.T) {
     // Create a request to pass to our handler. We don't have any query parameters for now, so we'll
     // pass 'nil' as the third parameter.
     var request_front React_request
@@ -38,25 +38,25 @@ func TestHealthCheckHandler(t *testing.T) {
 
     // We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
     rr := httptest.NewRecorder()
-    handler := http.HandlerFunc( server)
+    handler := http.HandlerFunc(Server)
 
     // Our handlers satisfy http.Handler, so we can call their ServeHTTP method 
     // directly and pass in our Request and ResponseRecorder.
     handler.ServeHTTP(rr, req)
 
     // Check the status code is what we expect.
-    // if status := rr.Code; status != http.StatusOK {
-    //     t.Errorf("handler returned wrong status code: got %v want %v",
-    //         status, http.StatusOK)
-    // }
+     // if status := rr.Code; status != http.StatusOK {
+     //     t.Errorf("handler returned wrong status code: got %v want %v",
+     //         status, http.StatusOK)
+     // }
 
     // Check the response body is what we expect.
-    //expected := `{"alive": true}`
+    expected := `{"alive": true}`
     fmt.Println(rr.Body.String())
-    // if rr.Body.String() != expected {
-    //     t.Errorf("handler returned unexpected body: got %v want %v",
-    //         rr.Body.String(), expected)
-    // }
+     if rr.Body.String() != expected {
+         t.Errorf("handler returned unexpected body: got %v want %v",
+             rr.Body.String(), expected)
+     }
 }
 func request(Act string, UserID string, Password string, account Account,fitness Fitness,friendlist []string ) React_request{
     var r React_request
@@ -71,28 +71,28 @@ func request(Act string, UserID string, Password string, account Account,fitness
 
 
 
-type React_request struct {
-    Act      string 
-    UserID   string  
-    Password string 
-    Account  Account 
-    Fitness  Fitness
-    Friendlist []string 
-}
+// type React_request struct {
+//     Act      string 
+//     UserID   string  
+//     Password string 
+//     Account  Account 
+//     Fitness  Fitness
+//     Friendlist []string 
+// }
 
-type Fitness struct {   
-    Date string    
-    UserID string  
-    Calorie string 
-}
+// type Fitness struct {   
+//     Date string    
+//     UserID string  
+//     Calorie string 
+// }
 
-type Account struct {   
-    UserID string  
-    Password string
-    Height int 
-    Weight int 
-    Gender string 
-    Age  int 
-}
+// type Account struct {   
+//     UserID string  
+//     Password string
+//     Height int 
+//     Weight int 
+//     Gender string 
+//     Age  int 
+// }
 
 
