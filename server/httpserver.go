@@ -29,13 +29,15 @@ func Server(w http.ResponseWriter, req *http.Request) {
     fmt.Println(t.Act)
     fmt.Println(t)
     var reply Reply
+    db,_:= gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
+    
 
     if(t.Act=="LI"){  //update log in info          
             var account Account 
             if errci:=db.Where("user_id = ? AND password = ?", t.UserID,t.Password).First(&account).Error;errci==nil{
-                CheckDb(t.UserID,&reply)
-                CheckFriend(t.UserID,&reply)
-                CheckFitness(t.UserID,&reply)
+                CheckDb(t.UserID,&reply,db)
+                CheckFriend(t.UserID,&reply,db)
+                CheckFitness(t.UserID,&reply,db)
             } else{
               reply.Error= "wrong Password or UserID"
             } 
@@ -51,9 +53,9 @@ func Server(w http.ResponseWriter, req *http.Request) {
                   account.Age    = t.Account.Age    
                   db.Save(&account) 
                 }                            
-                CheckDb(t.UserID,&reply) 
-                CheckFriend(t.UserID,&reply)
-                CheckFitness(t.UserID,&reply)
+                CheckDb(t.UserID,&reply,db) 
+                CheckFriend(t.UserID,&reply,db)
+                CheckFitness(t.UserID,&reply,db)
             }else{
               reply.Error= "User doesn't exist"
             } 
@@ -73,9 +75,9 @@ func Server(w http.ResponseWriter, req *http.Request) {
                 db.NewRecord(&t.Fitness)
                 db.Create(&t.Fitness)
               }
-              CheckDb(t.UserID,&reply) 
-              CheckFriend(t.UserID,&reply)
-              CheckFitness(t.UserID,&reply)
+              CheckDb(t.UserID,&reply,db) 
+              CheckFriend(t.UserID,&reply,db)
+              CheckFitness(t.UserID,&reply,db)
             }
             
     }else if(t.Act=="FO"){
@@ -95,9 +97,9 @@ func Server(w http.ResponseWriter, req *http.Request) {
                   db.Create(&tmpfriend)
                 }                               
               }
-              CheckDb(t.UserID,&reply) 
-              CheckFriend(t.UserID,&reply)
-              CheckFitness(t.UserID,&reply)
+              CheckDb(t.UserID,&reply,db) 
+              CheckFriend(t.UserID,&reply,db)
+              CheckFitness(t.UserID,&reply,db)
             }
     }else if(t.Act=="SI"){  //update account info
             var newaccount Account        
@@ -121,7 +123,7 @@ func Server(w http.ResponseWriter, req *http.Request) {
     w.Write(output)
 
 }
-func  CheckFriend( UserID string, reply *Reply) {
+func  CheckFriend( UserID string, reply *Reply, db *gorm.DB) {
     var friend  []Friend
     if err:= db.Where("user_id = ?", UserID).Find(&friend).Error; err!=nil{
          fmt.Println("friend check err")
@@ -131,7 +133,7 @@ func  CheckFriend( UserID string, reply *Reply) {
       }      
 }
 
-func  CheckFitness( UserID string, reply *Reply) {
+func  CheckFitness( UserID string, reply *Reply, db *gorm.DB) {
     var fitness  []Fitness
     var fitnesslist []string
     if err:= db.Where("user_id = ?", UserID).Find(&fitness).Error; err!=nil{
@@ -142,7 +144,7 @@ func  CheckFitness( UserID string, reply *Reply) {
       }      
       reply.Fitnesslist= fitnesslist
 }
-func  CheckDb( UserID string,reply *Reply) {
+func  CheckDb( UserID string,reply *Reply, db *gorm.DB) {
       var accountinfo Account
       if err:=db.Where("user_id = ?", UserID).First(&accountinfo).Error; err!=nil{
         fmt.Println("no user match!")
