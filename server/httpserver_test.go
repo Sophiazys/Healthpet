@@ -52,9 +52,9 @@ func TestServer(t *testing.T) {
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"User doesn't exist"}`
     testfunc( requestAFerr, "AFerr", expected,t)
 
-    /////////////record AFtest
-    requestFO := request("FO","123123","123123",account,fitness,friendlist)
-    expected = `{"UserID":"123123","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":["2018-11-08 0"],"Friendlist":["111111"],"Error":" friend 123456 does not exist"}`
+    /////////////record FOtest
+    requestFO := request("FO","FOtest","123123",account,fitness,friendlist)
+    expected = `{"UserID":"FOtest","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":null,"Friendlist":["111111"],"Error":" friend 123456 does not exist"}`
     testfunc( requestFO, "FO", expected,t)
 
 
@@ -75,17 +75,6 @@ func TestServer(t *testing.T) {
     requestActerr := request("sophia","SIerrtest","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"Bad Request"}`
     testfunc( requestActerr, "Acterr", expected,t)
-
-
-
-
-
-
-
-
-
-
-    
     
 }
 func request(Act string, UserID string, Password string, account Account,fitness Fitness,friendlist []string ) React_request{
