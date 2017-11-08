@@ -12,7 +12,7 @@ import (
     _"github.com/jinzhu/gorm/dialects/mysql"
 
 )
-var db *gorm.DB
+// var db *gorm.DB
 
 func check(e error) {
   if e != nil {
@@ -163,10 +163,10 @@ func  CheckDb( UserID string,reply *Reply, db *gorm.DB) {
 func main() {
     var err error
     
-    db,err = gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
+    // db,err = gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
     
-    fmt.Println(err)
-    db.AutoMigrate(&Fitness{},&Account{},&Friend{})
+    // fmt.Println(err)
+    // db.AutoMigrate(&Fitness{},&Account{},&Friend{})
     
     http.HandleFunc("/", Server) // set router
     err = http.ListenAndServe(":9191", nil) // set listen port
