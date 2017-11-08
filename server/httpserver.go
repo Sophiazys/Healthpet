@@ -87,9 +87,12 @@ func Server(w http.ResponseWriter, req *http.Request) {
             }else{
               for i:=range t.Friendlist {
                 var tmpfriend Friend
+                var checkfrend Friend 
                 var faccount Account
                 if errf:= db.Where("user_id = ?",t.Friendlist[i]).First(&faccount).Error; errf!=nil{
                   reply.Error = reply.Error+" friend "+ t.Friendlist[i]+ " does not exist"
+                }else if errf:= db.Where("user_id = ? AND fried_id = ? ",t.UserID,t.Friendlist[i]).First(&checkfrend).Error; errf==nil{
+                  //friend already exist need to add 
                 }else{
                   tmpfriend.UserID=t.UserID
                   tmpfriend.FriedID=t.Friendlist[i]
