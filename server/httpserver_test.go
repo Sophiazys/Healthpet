@@ -43,20 +43,14 @@ func TestServer(t *testing.T) {
     // Our handlers satisfy http.Handler, so we can call their ServeHTTP method 
     // directly and pass in our Request and ResponseRecorder.
     handler.ServeHTTP(rr, req)
-
-    // Check the status code is what we expect.
-     // if status := rr.Code; status != http.StatusOK {
-     //     t.Errorf("handler returned wrong status code: got %v want %v",
-     //         status, http.StatusOK)
-     // }
-
     // Check the response body is what we expect.
-    //expected := `{"alive": true}`
-    fmt.Println(rr.Body.String())
-     // if rr.Body.String() != expected {
-     //     t.Errorf("handler returned unexpected body: got %v want %v",
-     //         rr.Body.String(), expected)
-     // }
+    expected := `{"UserID":"123123","Password":"123123","Height":29,"Weight":30,"Gender":"Female","Age":18,"Fitnesslist":null,"Friendlist":null,"Error":""}`
+    if rr.Body.String() != expected {
+         t.Errorf("handler returned unexpected body: got %v want %v",
+             rr.Body.String(), expected)
+    }else{
+        fmt.Println("\nLI test")
+    }
 }
 func request(Act string, UserID string, Password string, account Account,fitness Fitness,friendlist []string ) React_request{
     var r React_request
