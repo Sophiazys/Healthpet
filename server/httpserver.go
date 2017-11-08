@@ -99,6 +99,16 @@ func server(w http.ResponseWriter, req *http.Request) {
               CheckFriend(t.UserID,&reply)
               CheckFitness(t.UserID,&reply)
             }
+    }else if(t.Act=="SI"){  //update account info
+            var newaccount Account        
+            if errci:= db.Where("user_id = ?", t.UserID).First(&newaccount).Error; errci!=nil{
+                newaccount.UserID = t.UserID
+                newaccount.Password= t.Password
+                db.NewRecord(&newaccount)
+                db.Create(&newaccount)
+            }else{
+              reply.Error= "User already exist"
+            } 
     }else{
             reply.Error="Bad Request"
             // CheckDb(t.UserID,&reply)   
