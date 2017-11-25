@@ -118,7 +118,7 @@ func Server(w http.ResponseWriter, req *http.Request) {
     }else if(t.Act=="APIF"){
         client := &http.Client{}
         var req Api 
-        req.Query = "eggs"
+        req.Query = t.Nutrition
         req.Timezone = "US/Eastern"
          
         res1D := &req
@@ -127,51 +127,38 @@ func Server(w http.ResponseWriter, req *http.Request) {
         body := bytes.NewReader(res1B)
         resp, _:= http.NewRequest("POST","https://trackapi.nutritionix.com/v2/natural/nutrients",body)
         resp.Header.Add("Content-Type","application/json")
-        resp.Header.Add("x-app-id","11c36a20")
-        resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
+        //resp.Header.Add("x-app-id","11c36a20")
+        //resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
         r, _ := client.Do(resp)
         fmt.Println(r.Status)
-
-        data, _ := ioutil.ReadAll(r.Body) 
-        var prettyJSON bytes.Buffer
-        error := json.Indent(&prettyJSON, data, "", "\t")
-        if error != nil {
-        fmt.Println("JSON parse error: ", error)
-        }
-
-        fmt.Println("CSP Violation:", string(prettyJSON.Bytes()))      
-        
-     // calorie kcal
-
-
+        data, _ := ioutil.ReadAll(r.Body)
+        json.Unmarshal(data, &reply.Nutrition)
+        fmt.Println(reply.Nutrition)
+        // calorie kcal
     }else if(t.Act=="APIE"){
         client := &http.Client{}
         var req Apie 
-        req.Query = "ran 3 miles"
-        req.Gender = "female"
-        req.Age = 18
-         
+        var account Account 
+        if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci==nil{
+        req.Query = t.Exercise
+        req.Gender = account.Gender
+        req.Age = account.Age        
         res1D := &req
         res1B, _ := json.Marshal(res1D)
         fmt.Println(string(res1B))
         body := bytes.NewReader(res1B)
         resp, _:= http.NewRequest("POST","https://trackapi.nutritionix.com/v2/natural/exercise",body)
         resp.Header.Add("Content-Type","application/json")
-        resp.Header.Add("x-app-id","11c36a20")
-        resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
+        //resp.Header.Add("x-app-id","11c36a20")
+        //resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
         r, _ := client.Do(resp)
         fmt.Println(r.Status)
-
-        data, _ := ioutil.ReadAll(r.Body) 
-        var prettyJSON bytes.Buffer
-        error := json.Indent(&prettyJSON, data, "", "\t")
-        if error != nil {
-        fmt.Println("JSON parse error: ", error)
-        }
-
-        fmt.Println("CSP Violation:", string(prettyJSON.Bytes()))      
-        
-
+        data, _ := ioutil.ReadAll(r.Body)
+        json.Unmarshal(data, &reply.Exercise)
+        fmt.Println(reply.Exercise)                                                        
+        }else{
+              reply.Error= "User doesn't exist"
+        } 
     }else{
             reply.Error="Bad Request"
             // CheckDb(t.UserID,&reply)   
@@ -239,7 +226,9 @@ type React_request struct {
     Password string 
     Account  Account 
     Fitness  Fitness
-    Friendlist []string 
+    Friendlist []string
+    Nutrition string 
+    Exercise string 
 }
 
 type Reply struct{  
@@ -251,6 +240,8 @@ type Reply struct{
    Age  int `json:"Age"`
    Fitnesslist []string `json:"Fitnesslist"`
    Friendlist []string `json:"Friendlist"`
+   Nutrition Nutrireply
+   Exercise Excerreply
    Error string   
    
 }
@@ -286,4 +277,27 @@ type Apie struct {
   Height_cm int `json:"height_cm"`
   Age int       `json:"age"`
 
+}
+
+type Nutrireply struct {
+   UserID string `json:"UserID"`
+   Food_name string `json:"food_name"`
+   Serving_qty string `json:"serving_qty"`
+   Serving_unit string `json:"serving_unit"`
+   Serving_weight_grams string `json:"serving_weight_grams"`
+   Calories_kcal int `json:"nf_calories"`
+   Toalfat_g int `json:"nf_total_fat"`
+   Saturatedfat_g int `json:"nf_saturated_fat"`
+   Cholesterol_g int   `json:"nf_cholesterol"`
+   Sodium_g int `json:"nf_sodium"`
+   Carbohydrate_g int `json:"nf_total_carbohydrate"`
+   Fiber_g int  `json:"nf_dietary_fiber"`
+   Sugars_g int  `json:"nf_sugars"`
+   Protein_g int `json:"nf_protein"`
+   Potassium_g int `json:"nf_potassium"`
+}
+type Excerreply struct {
+   Sports string `json:"user_input"`
+   Duration int  `json:"duration_min"`     
+   Calorie int  `json:"nf_calories"`
 }
