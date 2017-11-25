@@ -90,7 +90,7 @@ func TestServer(t *testing.T) {
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"User already exist"}`
     testfunc( requestSIerr, "SIerr", expected,t)
 
-    requestActerr := request("sophia","SIerrtest","123123",account,fitness,friendlist)
+    requestActerr := request("Sophia","SIerrtest","123123",account,fitness,friendlist)
     expected = `{"UserID":"","Password":"","Height":0,"Weight":0,"Gender":"","Age":0,"Fitnesslist":null,"Friendlist":null,"Error":"Bad Request"}`
     testfunc( requestActerr, "Acterr", expected,t)
     

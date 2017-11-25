@@ -5,6 +5,7 @@ import (
     "net/http"
     //"strings"
     //"strconv"
+    "bytes"
     "log"
     "encoding/json"
     "io/ioutil"
@@ -114,6 +115,63 @@ func Server(w http.ResponseWriter, req *http.Request) {
             }else{
               reply.Error= "User already exist"
             } 
+    }else if(t.Act=="APIF"){
+        client := &http.Client{}
+        var req Api 
+        req.Query = "eggs"
+        req.Timezone = "US/Eastern"
+         
+        res1D := &req
+        res1B, _ := json.Marshal(res1D)
+        fmt.Println(string(res1B))
+        body := bytes.NewReader(res1B)
+        resp, _:= http.NewRequest("POST","https://trackapi.nutritionix.com/v2/natural/nutrients",body)
+        resp.Header.Add("Content-Type","application/json")
+        resp.Header.Add("x-app-id","11c36a20")
+        resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
+        r, _ := client.Do(resp)
+        fmt.Println(r.Status)
+
+        data, _ := ioutil.ReadAll(r.Body) 
+        var prettyJSON bytes.Buffer
+        error := json.Indent(&prettyJSON, data, "", "\t")
+        if error != nil {
+        fmt.Println("JSON parse error: ", error)
+        }
+
+        fmt.Println("CSP Violation:", string(prettyJSON.Bytes()))      
+        
+     // calorie kcal
+
+
+    }else if(t.Act=="APIE"){
+        client := &http.Client{}
+        var req Apie 
+        req.Query = "ran 3 miles"
+        req.Gender = "female"
+        req.Age = 18
+         
+        res1D := &req
+        res1B, _ := json.Marshal(res1D)
+        fmt.Println(string(res1B))
+        body := bytes.NewReader(res1B)
+        resp, _:= http.NewRequest("POST","https://trackapi.nutritionix.com/v2/natural/exercise",body)
+        resp.Header.Add("Content-Type","application/json")
+        resp.Header.Add("x-app-id","11c36a20")
+        resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
+        r, _ := client.Do(resp)
+        fmt.Println(r.Status)
+
+        data, _ := ioutil.ReadAll(r.Body) 
+        var prettyJSON bytes.Buffer
+        error := json.Indent(&prettyJSON, data, "", "\t")
+        if error != nil {
+        fmt.Println("JSON parse error: ", error)
+        }
+
+        fmt.Println("CSP Violation:", string(prettyJSON.Bytes()))      
+        
+
     }else{
             reply.Error="Bad Request"
             // CheckDb(t.UserID,&reply)   
@@ -169,7 +227,7 @@ func main() {
     // db.AutoMigrate(&Fitness{},&Account{},&Friend{})
     
     http.HandleFunc("/", Server) // set router
-    err = http.ListenAndServe(":9191", nil) // set listen port
+    err = http.ListenAndServe(":9090", nil) // set listen port
     if err != nil {
         log.Fatal("ListenAndServe: ", err)
     }
@@ -215,4 +273,17 @@ type Fitness struct {
     Date string    `gorm:"primary_key"`
     UserID string  `gorm:"primary_key"`
     Calorie string 
+}
+type Api struct {
+   Query string `json:"query"`
+   Timezone string `json:"timezone"`
+}
+
+type Apie struct {
+  Query string `json:"query"`
+  Gender string `json:"gender"`
+  Weight_kg int `json:"weight_kg"`
+  Height_cm int `json:"height_cm"`
+  Age int       `json:"age"`
+
 }
