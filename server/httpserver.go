@@ -127,13 +127,12 @@ func Server(w http.ResponseWriter, req *http.Request) {
         body := bytes.NewReader(res1B)
         resp, _:= http.NewRequest("POST","https://trackapi.nutritionix.com/v2/natural/nutrients",body)
         resp.Header.Add("Content-Type","application/json")
-        //resp.Header.Add("x-app-id","11c36a20")
-        //resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
+        resp.Header.Add("x-app-id","11c36a20")
+        resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
         r, _ := client.Do(resp)
-        fmt.Println(r.Status)
         data, _ := ioutil.ReadAll(r.Body)
-        json.Unmarshal(data, &reply.Nutrition)
-        fmt.Println(reply.Nutrition)
+        w.Write(data)
+        
         // calorie kcal
     }else if(t.Act=="APIE"){
         client := &http.Client{}
@@ -149,13 +148,12 @@ func Server(w http.ResponseWriter, req *http.Request) {
         body := bytes.NewReader(res1B)
         resp, _:= http.NewRequest("POST","https://trackapi.nutritionix.com/v2/natural/exercise",body)
         resp.Header.Add("Content-Type","application/json")
-        //resp.Header.Add("x-app-id","11c36a20")
-        //resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
+        resp.Header.Add("x-app-id","11c36a20")
+        resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
         r, _ := client.Do(resp)
-        fmt.Println(r.Status)
         data, _ := ioutil.ReadAll(r.Body)
-        json.Unmarshal(data, &reply.Exercise)
-        fmt.Println(reply.Exercise)                                                        
+        w.Write(data)
+                                                           
         }else{
               reply.Error= "User doesn't exist"
         } 
@@ -205,6 +203,13 @@ func  CheckDb( UserID string,reply *Reply, db *gorm.DB) {
       reply.Age = accountinfo.Age
 
 }
+
+func prettyprint(b []byte) ([]byte, error) {
+    var out bytes.Buffer
+    err := json.Indent(&out, b, "", "  ")
+    return out.Bytes(), err
+}
+
 func main() {
     var err error
     
@@ -240,8 +245,7 @@ type Reply struct{
    Age  int `json:"Age"`
    Fitnesslist []string `json:"Fitnesslist"`
    Friendlist []string `json:"Friendlist"`
-   Nutrition Nutrireply
-   Exercise Excerreply
+   Nutrition NfromApi
    Error string   
    
 }
@@ -278,9 +282,11 @@ type Apie struct {
   Age int       `json:"age"`
 
 }
+type NfromApi struct{
+  Foods []Nutrition `json:"foods"`
+}
 
-type Nutrireply struct {
-   UserID string `json:"UserID"`
+type Nutrition struct {
    Food_name string `json:"food_name"`
    Serving_qty string `json:"serving_qty"`
    Serving_unit string `json:"serving_unit"`
@@ -296,8 +302,4 @@ type Nutrireply struct {
    Protein_g int `json:"nf_protein"`
    Potassium_g int `json:"nf_potassium"`
 }
-type Excerreply struct {
-   Sports string `json:"user_input"`
-   Duration int  `json:"duration_min"`     
-   Calorie int  `json:"nf_calories"`
-}
+
