@@ -242,10 +242,10 @@ type React_request struct {
 type Reply struct{  
    UserID string `json:"UserID"`
    Password string  `json:"Password"`
-   Height int `json:"Height"`
-   Weight int `json:"Weight"`
+   Height string `json:"Height"`
+   Weight string `json:"Weight"`
    Gender string `json:"Gender"`
-   Age  int `json:"Age"`
+   Age  string `json:"Age"`
    Fitnesslist []string `json:"Fitnesslist"`
    Friendlist []string `json:"Friendlist"`
    Nutrition NfromApi
@@ -256,10 +256,10 @@ type Account struct {
     
     UserID string  `gorm:"primary_key"`
     Password string
-    Height int 
-    Weight int 
+    Height string 
+    Weight string 
     Gender string 
-    Age  int 
+    Age  string
 }
 type Friend struct {
     
@@ -280,9 +280,9 @@ type Api struct {
 type Apie struct {
   Query string `json:"query"`
   Gender string `json:"gender"`
-  Weight_kg int `json:"weight_kg"`
-  Height_cm int `json:"height_cm"`
-  Age int       `json:"age"`
+  Weight_kg string `json:"weight_kg"`
+  Height_cm string `json:"height_cm"`
+  Age string       `json:"age"`
 
 }
 type NfromApi struct{
