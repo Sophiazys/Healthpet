@@ -166,7 +166,10 @@ func Server(w http.ResponseWriter, req *http.Request) {
 
     res1D := &reply
     output,_ := json.Marshal(res1D)
-    w.Write(output)
+    if(t.Act!="APIF"&&t.Act!="APIE"){
+       w.Write(output)
+    }
+    
 
 }
 func  CheckFriend( UserID string, reply *Reply, db *gorm.DB) {
