@@ -131,15 +131,7 @@ func Server(w http.ResponseWriter, req *http.Request) {
             } 
     }else if(t.Act=="APIF"){
         client := &http.Client{}
-        var req Api 
-        req.Query = t.Nutrition
-        req.Timezone = "US/Eastern"
-         
-        res1D := &req
-        res1B, _ := json.Marshal(res1D)
-        fmt.Println(string(res1B))
-        body := bytes.NewReader(res1B)
-        resp, _:= http.NewRequest("POST","https://trackapi.nutritionix.com/v2/natural/nutrients",body)
+        resp, _:= http.NewRequest("GET","https://trackapi.nutritionix.com/v2/search/instant?query="+t.Nutrition,nil)
         resp.Header.Add("Content-Type","application/json")
         resp.Header.Add("x-app-id","11c36a20")
         resp.Header.Add("x-app-key","bde581bab71e8481c6656ece20287122")
@@ -153,9 +145,14 @@ func Server(w http.ResponseWriter, req *http.Request) {
         var req Apie 
         var account Account 
         if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci==nil{
+        
         req.Query = t.Exercise
         req.Gender = account.Gender
-        req.Age = account.Age        
+        req.Age= account.Age
+        fmt.Println(account.Weight)
+        req.Weight_kg,_= strconv.Atoi(account.Weight)
+        req.Height_cm,_= strconv.Atoi(account.Height)
+        
         res1D := &req
         res1B, _ := json.Marshal(res1D)
         fmt.Println(string(res1B))
@@ -304,8 +301,8 @@ type Api struct {
 type Apie struct {
   Query string `json:"query"`
   Gender string `json:"gender"`
-  Weight_kg string `json:"weight_kg"`
-  Height_cm string `json:"height_cm"`
+  Weight_kg int `json:"weight_kg"`
+  Height_cm int `json:"height_cm"`
   Age string       `json:"age"`
 
 }
