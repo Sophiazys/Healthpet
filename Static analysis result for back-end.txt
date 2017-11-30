@@ -5,6 +5,7 @@ code clean, not static error detected
 
 2. Static Check
 httpserver.go:233:8: this value of err is never used (SA4006)
+We have fixed this bug.
 
 3. Golint
 httpserver.go:24:1: exported function Server should have comment or be unexported
@@ -28,3 +29,4 @@ httpserver.go:301:6: exported type Apie should have comment or be unexported
 httpserver.go:304:3: don't use underscores in Go names; struct field Weight_kg should be WeightKg
 httpserver.go:305:3: don't use underscores in Go names; struct field Height_cm should be HeightCm
 
+We have added comments as the tool said.
