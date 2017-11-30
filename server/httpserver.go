@@ -4,7 +4,7 @@ import (
     "fmt"
     "net/http"
     //"strings"
-    //"strconv"
+    "strconv"
     "bytes"
     "log"
     "encoding/json"
@@ -51,7 +51,13 @@ func Server(w http.ResponseWriter, req *http.Request) {
                   account.Height = t.Account.Height
                   account.Weight = t.Account.Weight
                   account.Gender = t.Account.Gender
-                  account.Age    = t.Account.Age    
+                  account.Age    = t.Account.Age 
+                  account.Name   = t.Account.Name
+                  account.Input_goal= t.Account.Input_goal
+                  account.Output_goal= t.Account.Output_goal
+                  fmt.Println("intput goal"+account.Gender)
+                  fmt.Println("intput goal"+t.Account.Output_goal)
+                  fmt.Println("intput goal"+account.Output_goal)      
                   db.Save(&account) 
                 }                            
                 CheckDb(t.UserID,&reply,db) 
@@ -69,7 +75,14 @@ func Server(w http.ResponseWriter, req *http.Request) {
             }else{
               if errd:= db.Where("user_id = ? AND date = ?",t.UserID,t.Fitness.Date).First(&new_fitness).Error; errd ==nil{
                 fmt.Println(new_fitness)
-                db.Model(&new_fitness).Update("calorie", t.Fitness.Calorie)
+                fiti, _ := strconv.Atoi(t.Fitness.Input)
+                nfiti,_ := strconv.Atoi(new_fitness.Input)
+                newinput :=  strconv.Itoa(fiti+nfiti)
+                fito, _ := strconv.Atoi(t.Fitness.Output)
+                nfito,_ := strconv.Atoi(new_fitness.Output)
+                newoutput :=  strconv.Itoa(fito+nfito)
+                db.Model(&new_fitness).Update("input", newinput)
+                db.Model(&new_fitness).Update("output", newoutput)
                 //db.Save(&new_fitness)
               }else{
                 fmt.Println(t.Fitness.Date)
@@ -80,7 +93,8 @@ func Server(w http.ResponseWriter, req *http.Request) {
               CheckFriend(t.UserID,&reply,db)
               CheckFitness(t.UserID,&reply,db)
             }
-            
+    }else if(t.Act=="CA"){
+        CheckDb(t.UserID,&reply,db)             
     }else if(t.Act=="FO"){
             var account Account 
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci!=nil{
@@ -189,14 +203,14 @@ func  CheckFitness( UserID string, reply *Reply, db *gorm.DB) {
          fmt.Println("fitness check err")
       }
       for i:=range fitness {
-        fitnesslist = append(fitnesslist,fitness[i].Date+" "+fitness[i].Calorie)
+        fitnesslist = append(fitnesslist,fitness[i].Date+" "+"Input "+fitness[i].Input+" Output "+fitness[i].Output)
       }      
       reply.Fitnesslist= fitnesslist
 }
 func  CheckDb( UserID string,reply *Reply, db *gorm.DB) {
       var accountinfo Account
       if err:=db.Where("user_id = ?", UserID).First(&accountinfo).Error; err!=nil{
-        fmt.Println("no user match!")
+        reply.Error = "no user match!"
       }
       reply.UserID = accountinfo.UserID
       reply.Password = accountinfo.Password
@@ -204,6 +218,9 @@ func  CheckDb( UserID string,reply *Reply, db *gorm.DB) {
       reply.Weight = accountinfo.Weight
       reply.Gender = accountinfo.Gender
       reply.Age = accountinfo.Age
+      reply.Name = accountinfo.Name
+      reply.Input_goal = accountinfo.Input_goal
+      reply.Output_goal = accountinfo.Output_goal
 
 }
 
@@ -216,10 +233,10 @@ func prettyprint(b []byte) ([]byte, error) {
 func main() {
     var err error
     
-    // db,err = gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
+    db,err := gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
     
     // fmt.Println(err)
-    // db.AutoMigrate(&Fitness{},&Account{},&Friend{})
+    db.AutoMigrate(&Fitness{},&Account{},&Friend{})
     
     http.HandleFunc("/", Server) // set router
     err = http.ListenAndServe(":9090", nil) // set listen port
@@ -237,10 +254,12 @@ type React_request struct {
     Friendlist []string
     Nutrition string 
     Exercise string 
+    
 }
 
 type Reply struct{  
    UserID string `json:"UserID"`
+   Name string 
    Password string  `json:"Password"`
    Height string `json:"Height"`
    Weight string `json:"Weight"`
@@ -248,7 +267,8 @@ type Reply struct{
    Age  string `json:"Age"`
    Fitnesslist []string `json:"Fitnesslist"`
    Friendlist []string `json:"Friendlist"`
-   Nutrition NfromApi
+   Input_goal string
+   Output_goal string
    Error string   
    
 }
@@ -260,6 +280,9 @@ type Account struct {
     Weight string 
     Gender string 
     Age  string
+    Name string
+    Input_goal string
+    Output_goal string
 }
 type Friend struct {
     
@@ -270,7 +293,8 @@ type Fitness struct {
    
     Date string    `gorm:"primary_key"`
     UserID string  `gorm:"primary_key"`
-    Calorie string 
+    Input string
+    Output string 
 }
 type Api struct {
    Query string `json:"query"`
@@ -285,24 +309,24 @@ type Apie struct {
   Age string       `json:"age"`
 
 }
-type NfromApi struct{
-  Foods []Nutrition `json:"foods"`
-}
+// type NfromApi struct{
+//   Foods []Nutrition `json:"foods"`
+// }
 
-type Nutrition struct {
-   Food_name string `json:"food_name"`
-   Serving_qty string `json:"serving_qty"`
-   Serving_unit string `json:"serving_unit"`
-   Serving_weight_grams string `json:"serving_weight_grams"`
-   Calories_kcal int `json:"nf_calories"`
-   Toalfat_g int `json:"nf_total_fat"`
-   Saturatedfat_g int `json:"nf_saturated_fat"`
-   Cholesterol_g int   `json:"nf_cholesterol"`
-   Sodium_g int `json:"nf_sodium"`
-   Carbohydrate_g int `json:"nf_total_carbohydrate"`
-   Fiber_g int  `json:"nf_dietary_fiber"`
-   Sugars_g int  `json:"nf_sugars"`
-   Protein_g int `json:"nf_protein"`
-   Potassium_g int `json:"nf_potassium"`
-}
+// type Nutrition struct {
+//    Food_name string `json:"food_name"`
+//    Serving_qty string `json:"serving_qty"`
+//    Serving_unit string `json:"serving_unit"`
+//    Serving_weight_grams string `json:"serving_weight_grams"`
+//    Calories_kcal int `json:"nf_calories"`
+//    Toalfat_g int `json:"nf_total_fat"`
+//    Saturatedfat_g int `json:"nf_saturated_fat"`
+//    Cholesterol_g int   `json:"nf_cholesterol"`
+//    Sodium_g int `json:"nf_sodium"`
+//    Carbohydrate_g int `json:"nf_total_carbohydrate"`
+//    Fiber_g int  `json:"nf_dietary_fiber"`
+//    Sugars_g int  `json:"nf_sugars"`
+//    Protein_g int `json:"nf_protein"`
+//    Potassium_g int `json:"nf_potassium"`
+// }
 
