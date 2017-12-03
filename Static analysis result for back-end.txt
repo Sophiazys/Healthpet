@@ -1,0 +1,32 @@
+Static analysis result for back-end
+
+1. Go vet
+code clean, not static error detected	
+
+2. Static Check
+httpserver.go:233:8: this value of err is never used (SA4006)
+We have fixed this bug.
+
+3. Golint
+httpserver.go:24:1: exported function Server should have comment or be unexported
+httpserver.go:71:17: don't use underscores in Go names; var new_fitness should be newFitness
+httpserver.go:186:1: exported function CheckFriend should have comment or be unexported
+httpserver.go:196:1: exported function CheckFitness should have comment or be unexported
+httpserver.go:207:1: exported function CheckDb should have comment or be unexported
+httpserver.go:245:6: don't use underscores in Go names; type React_request should be ReactRequest
+httpserver.go:245:6: exported type React_request should have comment or be unexported
+httpserver.go:257:6: exported type Reply should have comment or be unexported
+httpserver.go:267:4: don't use underscores in Go names; struct field Input_goal should be InputGoal
+httpserver.go:268:4: don't use underscores in Go names; struct field Output_goal should be OutputGoal
+httpserver.go:272:6: exported type Account should have comment or be unexported
+httpserver.go:281:5: don't use underscores in Go names; struct field Input_goal should be InputGoal
+httpserver.go:282:5: don't use underscores in Go names; struct field Output_goal should be OutputGoal
+httpserver.go:284:6: exported type Friend should have comment or be unexported
+httpserver.go:289:6: exported type Fitness should have comment or be unexported
+httpserver.go:296:6: exported type Api should have comment or be unexported
+httpserver.go:296:6: type Api should be API
+httpserver.go:301:6: exported type Apie should have comment or be unexported
+httpserver.go:304:3: don't use underscores in Go names; struct field Weight_kg should be WeightKg
+httpserver.go:305:3: don't use underscores in Go names; struct field Height_cm should be HeightCm
+
+We have added comments as the tool said.
