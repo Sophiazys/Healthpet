@@ -180,6 +180,9 @@ func Server(w http.ResponseWriter, req *http.Request) {
     if(t.Act!="APIF"&&t.Act!="APIE"){
        w.Write(output)
     }
+    if(t.Act=="APIE"&& reply.Error!=""){
+       w.Write(output)
+    }
     
 
 }
