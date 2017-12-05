@@ -24,7 +24,7 @@ func check(e error) {
 func Server(w http.ResponseWriter, req *http.Request) {
     fmt.Println(req.Method)
     
-    body, _ := ioutil.ReadAll(req.Body)
+    body, _ := ioutil.ReadAll(req.Body)  
     var t React_request
     json.Unmarshal(body, &t)
     fmt.Println(t.Act)
