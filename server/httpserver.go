@@ -94,7 +94,8 @@ func Server(w http.ResponseWriter, req *http.Request) {
               CheckFitness(t.UserID,&reply,db)
             }
     }else if(t.Act=="CA"){
-        CheckDb(t.UserID,&reply,db)             
+        CheckDb(t.UserID,&reply,db)
+        CheckFitness( t.UserID, &reply, db )             
     }else if(t.Act=="FO"){
             var account Account 
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci!=nil{
