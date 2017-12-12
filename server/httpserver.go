@@ -21,14 +21,10 @@ func check(e error) {
   }
 }
 
-func Server(w http.ResponseWriter, req *http.Request) {
-    fmt.Println(req.Method)
-    
+func Server(w http.ResponseWriter, req *http.Request) {   
     body, _ := ioutil.ReadAll(req.Body)  
     var t React_request
     json.Unmarshal(body, &t)
-    fmt.Println(t.Act)
-    fmt.Println(t)
     var reply Reply
     db,_:= gorm.Open("mysql", "Healthpetbackup:Healthpetbackup@(healthpetbackup.cf82kfticiw1.us-east-1.rds.amazonaws.com:3306)/Healthpetbackup?charset=utf8&parseTime=True&loc=Local")
     
@@ -44,21 +40,42 @@ func Server(w http.ResponseWriter, req *http.Request) {
             } 
 
     }else if(t.Act=="CI"){  //update account info
+            fmt.Println("here in CI")
             var account Account        
             if errci:= db.Where("user_id = ?", t.UserID).First(&account).Error; errci==nil{
+                 fmt.Println("find user")
+                 fmt.Println(t.Account.UserID)
                 if(account.UserID==t.Account.UserID){
-                  account.Password = t.Account.Password
-                  account.Height = t.Account.Height
-                  account.Weight = t.Account.Weight
-                  account.Gender = t.Account.Gender
-                  account.Age    = t.Account.Age 
-                  account.Name   = t.Account.Name
-                  account.Input_goal= t.Account.Input_goal
-                  account.Output_goal= t.Account.Output_goal
-                  fmt.Println("intput goal"+account.Gender)
+                  fmt.Println(len(t.Account.Password))
+                  if(len(t.Account.Password)!=0){
+                    fmt.Println("here password !=0")
+                    db.Model(&account).Update("password", t.Account.Password)
+                  }
+                  if(len(t.Account.Height)!=0){
+                    db.Model(&account).Update("height", t.Account.Height)
+                  }
+                  if(len(t.Account.Weight)!=0){
+                    db.Model(&account).Update("weight", t.Account.Weight)
+                  }
+                  if(len(t.Account.Gender)!=0){
+                    db.Model(&account).Update("gender", t.Account.Gender)
+                  }
+                  if(len(t.Account.Age)!=0){
+                    db.Model(&account).Update("age", t.Account.Age)
+                  }
+                  if(len(t.Account.Name)!=0){
+                    db.Model(&account).Update("name", t.Account.Name)
+                  }
+                  if(len(t.Account.Input_goal)!=0){
+                    db.Model(&account).Update("input_goal", t.Account.Input_goal)
+                  }
+                  if(len(t.Account.Output_goal)!=0){
+                    db.Model(&account).Update("output_goal", account.Output_goal)
+                  }
+                  fmt.Println("intput goal"+ account.Gender)
                   fmt.Println("intput goal"+t.Account.Output_goal)
                   fmt.Println("intput goal"+account.Output_goal)      
-                  db.Save(&account) 
+                  
                 }                            
                 CheckDb(t.UserID,&reply,db) 
                 CheckFriend(t.UserID,&reply,db)
